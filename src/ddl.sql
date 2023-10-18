@@ -7,14 +7,14 @@ DROP TYPE IF EXISTS gender, contract_type, staff_function, room_type, school_lev
 CREATE TYPE gender AS ENUM (
     'HOMME',
     'FEMME'
-    );
+);
 
 CREATE TABLE IF NOT EXISTS person(
     person_id SERIAL UNIQUE,
     person_fname VARCHAR NOT NULL,
     person_lname VARCHAR NOT NULL,
     person_gender gender NOT NULL,
-    person_birth_date DATE NOT NULL CHECK ( person_birth_date < CURRENT_DATE ),
+    person_birth_date DATE NOT NULL CHECK (person_birth_date < CURRENT_DATE),
     PRIMARY KEY (person_id)
 );
 
@@ -37,10 +37,10 @@ CREATE TABLE IF NOT EXISTS parent(
 );
 
 
-CREATE TYPE school_level AS ENUM(
-    'CP', 'CE1', 'CE2', 'CM1', 'CM2', '6M',
-    '5M', '4M', '3M', 'SECONDE', 'PREMIERE', 'TERMINAL'
-    );
+CREATE TYPE school_level AS ENUM (
+    'CP', 'CE1', 'CE2', 'CM1', 'CM2', '6E',
+    '5E', '4E', '3E', 'SECONDE', 'PREMIERE', 'TERMINALE'
+);
 
 CREATE TABLE IF NOT EXISTS child(
     child_id SERIAL UNIQUE,
@@ -51,9 +51,9 @@ CREATE TABLE IF NOT EXISTS child(
     FOREIGN KEY (parent_id) REFERENCES parent(parent_id)
 );
 
-CREATE TYPE contract_type AS ENUM(
+CREATE TYPE contract_type AS ENUM (
     'CDI', 'CDD', 'Intérimaire'
-    );
+);
 
 CREATE TABLE IF NOT EXISTS staff(
     staff_id SERIAL UNIQUE,
@@ -72,9 +72,9 @@ CREATE TABLE IF NOT EXISTS external_staff(
     FOREIGN KEY (ex_staff_id) REFERENCES staff(staff_id)
 );
 
-CREATE TYPE staff_function AS ENUM(
+CREATE TYPE staff_function AS ENUM (
     'Directeur', 'Secrétaire', 'Employé'
-    );
+);
 
 CREATE TABLE IF NOT EXISTS internal_staff(
     int_staff_id SERIAL UNIQUE,
@@ -89,8 +89,8 @@ CREATE TABLE IF NOT EXISTS activity(
     activity_id SERIAL UNIQUE,
     activity_name VARCHAR NOT NULL,
     activity_description TEXT NOT NULL,
-    activity_min_age INT NOT NULL CHECK ( activity_min_age > 1 ),
-    activity_price FLOAT NOT NULL CHECK ( activity_price >= 0 ),
+    activity_min_age INT NOT NULL CHECK (activity_min_age > 1),
+    activity_price FLOAT NOT NULL CHECK (activity_price >= 0),
     staff_id INT NOT NULL,
     PRIMARY KEY (activity_id),
     FOREIGN KEY (staff_id) REFERENCES staff(staff_id)
@@ -100,21 +100,22 @@ CREATE TABLE IF NOT EXISTS building(
     building_id SERIAL UNIQUE,
     building_name CHAR(1) NOT NULL,
     building_address VARCHAR(50) NOT NULL,
-    building_nb_floors INT NOT NULL CHECK ( building_nb_floors >= 1 ),
+    building_nb_floors INT NOT NULL CHECK (building_nb_floors >= 1),
     building_has_elevator BOOLEAN NULL,
     PRIMARY KEY (building_id)
 );
-CREATE TYPE room_type AS ENUM(
-    'Amphi', 'Salle', 'Atelier'
+
+CREATE TYPE room_type AS ENUM (
+    'Amphithéâtre', 'Salle', 'Atelier'
 );
 
 CREATE TABLE IF NOT EXISTS room(
     room_id SERIAL UNIQUE,
     room_name CHAR(1) NOT NULL,
-    room_floor INT NOT NULL CHECK ( room_floor >= 0 ),
-    room_number INT NOT NULL CHECK ( room_number >=0 ),
+    room_floor INT NOT NULL CHECK (room_floor >= 0),
+    room_number INT NOT NULL CHECK (room_number >=0),
     room_type room_type NOT NULL,
-    room_capacity INT NOT NULL CHECK ( room_capacity > 1 ),
+    room_capacity INT NOT NULL CHECK (room_capacity >= 1),
     building_id INT NOT NULL,
     PRIMARY KEY (room_id),
     FOREIGN KEY (building_id) REFERENCES building(building_id)
@@ -122,7 +123,7 @@ CREATE TABLE IF NOT EXISTS room(
 
 CREATE TABLE IF NOT EXISTS event(
     event_id SERIAL UNIQUE,
-    event_date DATE NOT NULL CHECK ( event.event_date > '12-12-1999' ),
+    event_date DATE NOT NULL CHECK (event.event_date > '12-12-1999'),
     event_start_time TIME NOT NULL,
     event_duration TIME NOT NULL,
     event_max_participant INT NOT NULL,
@@ -178,5 +179,3 @@ CREATE TABLE IF NOT EXISTS subscribe(
     FOREIGN KEY (person_id) REFERENCES person(person_id),
     FOREIGN KEY (activity_id) REFERENCES  activity(activity_id)
 );
-
-

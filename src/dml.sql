@@ -38,7 +38,7 @@ INSERT INTO building VALUES (1, 'A', '26, Rue de la République, 75000 Paris', 4
                             (2, 'B', '24, Rue de la République, 75000 Paris', 2, FALSE);
 
 
-INSERT INTO room VALUES (1, 'a', 1, 25, 'Atelier', 12, 1), (2,'a', 0, 10, 'Amphi', 300, 1 ),
+INSERT INTO room VALUES (1, 'a', 1, 25, 'Atelier', 12, 1), (2,'a', 0, 10, 'Amphithéâtre', 300, 1 ),
                         (3, 'b', 1, 56, 'Salle', 45, 2), (4, 'a', 2, 20, 'Atelier', 13, 2);
 
 INSERT INTO event VALUES (1, '2023-10-15', '12:45:00', '02:00:00', 10, 1, 1),
