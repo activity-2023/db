@@ -1,129 +1,136 @@
-DROP TABLE IF EXISTS  person, users, parent, staff, internal_staff,
+DROP TABLE IF EXISTS person, users, parent, staff, internal_staff,
     external_staff, staff_presence, building, room, activity, event,
-    room_logs, building_logs, participate, subscribe, child;
+    room_logs, building_logs, participate, subscribe, child CASCADE;
 
 DROP TYPE IF EXISTS gender, contract_type, staff_function, room_type, school_level;
 
 CREATE TYPE gender AS ENUM (
-    'HOMME',
-    'FEMME'
+    'MALE',
+    'FEMALE'
 );
 
 CREATE TABLE IF NOT EXISTS person(
-    person_id SERIAL UNIQUE,
-    person_fname VARCHAR NOT NULL,
-    person_lname VARCHAR NOT NULL,
+    person_id SERIAL,
+    person_fname VARCHAR(50) NOT NULL CHECK ( person_fname ~ '^[[:upper:]][[:lower:]]+([[:space:]][[:upper:]])?([[:space:]]?[[:upper:]][[:lower:]]+)*$' ),
+    person_lname VARCHAR(50) NOT NULL CHECK ( person_lname ~ '^([[:upper:]]+[[:space:]]?)+$' ),
     person_gender gender NOT NULL,
-    person_birth_date DATE NOT NULL CHECK (person_birth_date < CURRENT_DATE),
+    person_birth_date DATE NOT NULL CHECK (person_birth_date < CURRENT_DATE AND person_birth_date > CURRENT_DATE - INTERVAL '150 years'),
     PRIMARY KEY (person_id)
 );
 
-CREATE TABLE IF NOT EXISTS users(
-    user_id SERIAL UNIQUE,
-    user_login VARCHAR NOT NULL UNIQUE,
-    user_passwd VARCHAR NOT NULL,
+CREATE TABLE IF NOT EXISTS "user"(
+    user_id INTEGER,
+    user_login VARCHAR(20) NOT NULL UNIQUE CHECK ( user_login ~ '^[[:lower:]][a-z0-9]+$' ),
+    user_password_hash CHAR(128) NOT NULL CHECK ( user_password_hash ~ '^[a-f0-9]{128}$|^[A-F0-9]{128}$' ),
+    user_password_salt CHAR(10) NOT NULL CHECK ( user_password_hash ~ '^[[:alnum:]]{10}$' ),
     PRIMARY KEY (user_id),
     FOREIGN KEY (user_id) REFERENCES person(person_id)
 );
 
 CREATE TABLE IF NOT EXISTS parent(
-    parent_id SERIAL UNIQUE,
-    parent_email VARCHAR NOT NULL,
-    parent_phone CHAR(10) NOT NULL,
-    parent_job VARCHAR NULL,
-    parent_address VARCHAR NOT NULL,
+    parent_id INTEGER,
+    parent_email VARCHAR(320) NOT NULL CHECK ( parent_email ~ '^[\w!#$%&''/*+=?`{|}~^-]+(?:\.[\w!#$%&''/*+=?`{|}~^-]+)*@(?:[a-z0-9-]+\.)+[a-z]{2,6}$' ),
+    parent_phone CHAR(10) NOT NULL CHECK ( parent_phone ~ '^0[[:digit:]]{9}$' ),
+    parent_job VARCHAR(50) NULL CHECK ( parent_job ~ '^[a-zA-Z-'']+$' ),
+    address_street_number INTEGER NOT NULL CHECK ( address_street_number > 0 AND address_street_number < 10000 ),
+    address_street_name VARCHAR(50) NOT NULL,
+    address_zip_code CHAR(5) NOT NULL CHECK ( address_zip_code ~ '^[0-9]{5}$' ),
+    address_city VARCHAR(50) NOT NULL CHECK ( address_city ~ '^[[:upper:]]+$' ),
     PRIMARY KEY (parent_id),
-    FOREIGN KEY (parent_id) REFERENCES users(user_id)
+    FOREIGN KEY (parent_id) REFERENCES "user"(user_id)
 );
-
 
 CREATE TYPE school_level AS ENUM (
     'CP', 'CE1', 'CE2', 'CM1', 'CM2', '6E',
-    '5E', '4E', '3E', 'SECONDE', 'PREMIERE', 'TERMINALE'
+    '5E', '4E', '3E', '2ND', '1ERE', 'TERM'
 );
 
 CREATE TABLE IF NOT EXISTS child(
-    child_id SERIAL UNIQUE,
+    child_id INTEGER,
     child_school_level school_level NULL,
-    parent_id INT NOT NULL,
+    parent_id INTEGER NOT NULL,
     PRIMARY KEY (child_id),
     FOREIGN KEY (child_id) REFERENCES person(person_id),
     FOREIGN KEY (parent_id) REFERENCES parent(parent_id)
 );
 
 CREATE TYPE contract_type AS ENUM (
-    'CDI', 'CDD', 'Intérimaire'
+    'PERMANENT', 'FIXED-TERM', 'TEMPORARY', 'SERVICE'
 );
 
 CREATE TABLE IF NOT EXISTS staff(
-    staff_id SERIAL UNIQUE,
-    staff_email VARCHAR NOT NULL UNIQUE,
-    staff_phone CHAR(10) NOT NULL UNIQUE,
+    staff_id INTEGER,
+    staff_email VARCHAR(320) NOT NULL UNIQUE CHECK ( staff_email ~ '^[\w!#$%&''/*+=?`{|}~^-]+(?:\.[\w!#$%&''/*+=?`{|}~^-]+)*@(?:[a-z0-9-]+\.)+[a-z]{2,6}$' ),
+    staff_phone CHAR(10) NOT NULL UNIQUE CHECK ( staff_phone ~ '^0[[:digit:]]{9}$' ),
     staff_contract_type contract_type NOT NULL,
     PRIMARY KEY (staff_id),
-    FOREIGN KEY (staff_id) REFERENCES users(user_id)
+    FOREIGN KEY (staff_id) REFERENCES "user"(user_id)
 );
 
 CREATE TABLE IF NOT EXISTS external_staff(
-    ex_staff_id SERIAL UNIQUE,
-    ex_staff_origin VARCHAR NOT NULL,
-    ex_staff_job VARCHAR NULL,
+    ex_staff_id INTEGER,
+    ex_staff_origin VARCHAR(50) NOT NULL CHECK ( ex_staff_origin ~ '^[a-zA-Z-'']+$' ),
+    ex_staff_job VARCHAR(50) NULL CHECK ( ex_staff_job ~ '^[a-zA-Z-'']+$' ),
     PRIMARY KEY (ex_staff_id),
     FOREIGN KEY (ex_staff_id) REFERENCES staff(staff_id)
 );
 
 CREATE TYPE staff_function AS ENUM (
-    'Directeur', 'Secrétaire', 'Employé'
+    'EXECUTIVE', 'SECRETARY', 'EMPLOYEE'
 );
 
 CREATE TABLE IF NOT EXISTS internal_staff(
-    int_staff_id SERIAL UNIQUE,
-    int_staff_hr_number INT NOT NULL UNIQUE,
+    int_staff_id INTEGER,
+    int_staff_hr_number INTEGER NOT NULL UNIQUE CHECK ( int_staff_hr_number > 0 ),
     int_staff_function staff_function NOT NULL,
-    int_address VARCHAR NOT NULL,
+    address_street_number INTEGER NOT NULL CHECK ( address_street_number > 0 AND address_street_number < 10000 ),
+    address_street_name VARCHAR(50) NOT NULL,
+    address_zip_code CHAR(5) NOT NULL CHECK ( address_zip_code ~ '^[0-9]{5}$'),
+    address_city VARCHAR(50) NOT NULL CHECK ( address_city ~ '^[[:upper:]]+$' ),
     PRIMARY KEY (int_staff_id),
     FOREIGN KEY (int_staff_id) REFERENCES staff(staff_id)
 );
 
 CREATE TABLE IF NOT EXISTS activity(
-    activity_id SERIAL UNIQUE,
-    activity_name VARCHAR NOT NULL,
+    activity_id SERIAL,
+    activity_name VARCHAR(50) NOT NULL CHECK ( activity_name ~ '^[a-zA-Z0-9-'']+$' ),
     activity_description TEXT NOT NULL,
-    activity_min_age INT NOT NULL CHECK (activity_min_age > 1),
+    activity_min_age INTEGER NOT NULL CHECK (activity_min_age > 1),
     activity_price FLOAT NOT NULL CHECK (activity_price >= 0),
-    staff_id INT NOT NULL,
-    PRIMARY KEY (activity_id),
-    FOREIGN KEY (staff_id) REFERENCES staff(staff_id)
+    PRIMARY KEY (activity_id)
 );
 
 CREATE TABLE IF NOT EXISTS building(
-    building_id SERIAL UNIQUE,
-    building_name CHAR(1) NOT NULL,
-    building_address VARCHAR(50) NOT NULL,
-    building_nb_floors INT NOT NULL CHECK (building_nb_floors >= 1),
-    building_has_elevator BOOLEAN NULL,
+    building_id SERIAL,
+    building_name VARCHAR(20) NOT NULL CHECK ( building_name ~ '^[a-zA-Z-'']+$' ),
+    address_street_number INTEGER NOT NULL CHECK ( address_street_number > 0 AND address_street_number < 10000 ),
+    address_street_name VARCHAR(50) NOT NULL,
+    address_zip_code CHAR(5) NOT NULL CHECK ( address_zip_code ~ '^[0-9]{5}$'),
+    address_city VARCHAR(50) NOT NULL CHECK ( address_city ~ '^[[:upper:]]+$' ),
+    building_nb_floors INTEGER NOT NULL CHECK (building_nb_floors >= 0),
+    building_has_elevator BOOLEAN NOT NULL,
     PRIMARY KEY (building_id)
 );
 
 CREATE TYPE room_type AS ENUM (
-    'Amphithéâtre', 'Salle', 'Atelier'
+    'AMPHITHEATER', 'ROOM', 'WORKSHOP'
 );
 
 CREATE TABLE IF NOT EXISTS room(
-    room_id SERIAL UNIQUE,
-    room_name CHAR(1) NOT NULL,
-    room_floor INT NOT NULL CHECK (room_floor >= 0),
-    room_number INT NOT NULL CHECK (room_number >=0),
+    room_id SERIAL,
+    room_name VARCHAR(20) NOT NULL,
+    room_floor INTEGER NOT NULL CHECK (room_floor >= 0 AND room_floor < 500),
+    room_number INTEGER NOT NULL CHECK (room_number >=0),
     room_type room_type NOT NULL,
-    room_capacity INT NOT NULL CHECK (room_capacity >= 1),
-    building_id INT NOT NULL,
+    room_capacity INTEGER NOT NULL CHECK (room_capacity >= 1 AND room_capacity < 50000),
+    building_id INTEGER NOT NULL,
     PRIMARY KEY (room_id),
     FOREIGN KEY (building_id) REFERENCES building(building_id)
 );
 
 CREATE TABLE IF NOT EXISTS event(
-    event_id SERIAL UNIQUE,
-    event_date DATE NOT NULL CHECK (event.event_date > '12-12-1999'),
+    event_id SERIAL,
+    event_date DATE NOT NULL CHECK (event_date >= CURRENT_DATE),
     event_start_time TIME NOT NULL,
     event_duration TIME NOT NULL,
     event_max_participant INT NOT NULL,
@@ -135,19 +142,19 @@ CREATE TABLE IF NOT EXISTS event(
 );
 
 CREATE TABLE IF NOT EXISTS staff_presence(
-    staff_pres_id SERIAL UNIQUE,
+    staff_pres_id SERIAL,
     staff_pres_date DATE NOT NULL,
     staff_pres_start_time TIME NOT NULL,
-    staff_pres_end_time TIME NOT NULL,
-    staff_id INT NOT NULL,
+    staff_pres_duration TIME NOT NULL,
+    person_id INT NOT NULL,
     PRIMARY KEY (staff_pres_id),
-    FOREIGN KEY (staff_id) REFERENCES staff(staff_id)
+    FOREIGN KEY (person_id) REFERENCES staff(staff_id)
 );
 
 CREATE TABLE IF NOT EXISTS building_logs(
-    person_id INT NOT NULL,
-    building_id INT NOT NULL,
-    bl_date DATE NOT NULL,
+    person_id INTEGER,
+    building_id INTEGER,
+    bl_timestamp TIMESTAMP NOT NULL CHECK ( bl_timestamp >= CURRENT_TIMESTAMP ),
     bl_status BOOL NOT NULL,
     PRIMARY KEY (person_id, building_id),
     FOREIGN KEY (person_id) REFERENCES person(person_id),
@@ -155,9 +162,9 @@ CREATE TABLE IF NOT EXISTS building_logs(
 );
 
 CREATE TABLE IF NOT EXISTS room_logs(
-    room_id INT NOT NULL,
-    person_id INT NOT NULL,
-    rl_date DATE NOT NULL,
+    room_id INTEGER,
+    person_id INTEGER,
+    rl_timestamp TIMESTAMP NOT NULL CHECK ( rl_timestamp >= CURRENT_TIMESTAMP ),
     rl_status BOOL NOT NULL,
     PRIMARY KEY (room_id, person_id),
     FOREIGN KEY (room_id) REFERENCES room(room_id),
@@ -165,17 +172,33 @@ CREATE TABLE IF NOT EXISTS room_logs(
 );
 
 CREATE TABLE IF NOT EXISTS participate(
-    person_id INT NOT NULL,
-    event_id INT NOT NULL,
+    person_id INTEGER,
+    event_id INTEGER,
     PRIMARY KEY (person_id, event_id),
     FOREIGN KEY (person_id) REFERENCES person(person_id),
     FOREIGN KEY (event_id) REFERENCES  event(event_id)
 );
 
 CREATE TABLE IF NOT EXISTS subscribe(
-    person_id INT NOT NULL,
-    activity_id INT NOT NULL,
+    person_id INTEGER,
+    activity_id INTEGER,
     PRIMARY KEY (person_id, activity_id),
     FOREIGN KEY (person_id) REFERENCES person(person_id),
     FOREIGN KEY (activity_id) REFERENCES  activity(activity_id)
 );
+
+CREATE TABLE IF NOT EXISTS organize(
+    staff_id INTEGER,
+    event_id INTEGER,
+    PRIMARY KEY (staff_id, event_id),
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id),
+    FOREIGN KEY (event_id) REFERENCES event(event_id)
+);
+
+CREATE TABLE IF NOT EXISTS propose(
+    staff_id INTEGER,
+    activity_id INTEGER,
+    PRIMARY KEY (staff_id, activity_id),
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id),
+    FOREIGN KEY (activity_id) REFERENCES activity(activity_id)
+)
