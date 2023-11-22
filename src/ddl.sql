@@ -146,7 +146,7 @@ CREATE TABLE IF NOT EXISTS staff_presence(
     staff_pres_date DATE NOT NULL,
     staff_pres_start_time TIME NOT NULL,
     staff_pres_duration TIME NOT NULL,
-    person_id INT NOT NULL,
+    staff_id INTEGER NOT NULL,
     PRIMARY KEY (staff_pres_id),
     FOREIGN KEY (person_id) REFERENCES staff(staff_id)
 );
