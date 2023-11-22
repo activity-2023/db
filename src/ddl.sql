@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS person, users, parent, staff, internal_staff,
+DROP TABLE IF EXISTS person, "user", parent, staff, internal_staff,
     external_staff, staff_presence, building, room, activity, event,
-    room_logs, building_logs, participate, subscribe, child CASCADE;
+    room_logs, building_logs, participate, subscribe, child, organize, propose CASCADE;
 
 DROP TYPE IF EXISTS gender, contract_type, staff_function, room_type, school_level;
 
