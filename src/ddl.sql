@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS event(
     event_duration TIME NOT NULL,
     event_max_participants INT NOT NULL,
     room_id INTEGER NOT NULL,
-    activity_id INT NOT NULL,
+    activity_id INTEGER NOT NULL,
     PRIMARY KEY (event_id),
     FOREIGN KEY (room_id) REFERENCES room(room_id),
     FOREIGN KEY (activity_id) REFERENCES activity(activity_id)
