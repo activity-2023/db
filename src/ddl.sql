@@ -151,7 +151,7 @@ CREATE TABLE IF NOT EXISTS staff_presence(
     FOREIGN KEY (staff_id) REFERENCES staff(staff_id)
 );
 
-CREATE TABLE IF NOT EXISTS building_logs(
+CREATE TABLE IF NOT EXISTS building_log(
     person_id INTEGER,
     building_id INTEGER,
     bl_timestamp TIMESTAMP NOT NULL CHECK ( bl_timestamp >= CURRENT_TIMESTAMP ),
@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS building_logs(
     FOREIGN KEY (building_id) REFERENCES building(building_id)
 );
 
-CREATE TABLE IF NOT EXISTS room_logs(
+CREATE TABLE IF NOT EXISTS room_log(
     room_id INTEGER,
     person_id INTEGER,
     rl_timestamp TIMESTAMP NOT NULL CHECK ( rl_timestamp >= CURRENT_TIMESTAMP ),
