@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS "user"(
     user_id INTEGER,
     user_login VARCHAR(20) NOT NULL UNIQUE CHECK ( user_login ~ '^[[:lower:]][a-z0-9]+$' ),
     user_password_hash CHAR(128) NOT NULL CHECK ( user_password_hash ~ '^[a-f0-9]{128}$|^[A-F0-9]{128}$' ),
-    user_password_salt CHAR(10) NOT NULL CHECK ( user_password_hash ~ '^[[:alnum:]]{10}$' ),
+    user_password_salt CHAR(10) NOT NULL CHECK ( user_password_salt ~ '^[[:alnum:]]{10}$' ),
     PRIMARY KEY (user_id),
     FOREIGN KEY (user_id) REFERENCES person(person_id)
 );
