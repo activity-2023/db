@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS staff_presence(
     staff_pres_duration TIME NOT NULL,
     staff_id INTEGER NOT NULL,
     PRIMARY KEY (staff_pres_id),
-    FOREIGN KEY (person_id) REFERENCES staff(staff_id)
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id)
 );
 
 CREATE TABLE IF NOT EXISTS building_logs(
