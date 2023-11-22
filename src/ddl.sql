@@ -41,8 +41,8 @@ CREATE TABLE IF NOT EXISTS parent(
 );
 
 CREATE TYPE school_level AS ENUM (
-    'CP', 'CE1', 'CE2', 'CM1', 'CM2', '6E',
-    '5E', '4E', '3E', '2ND', '1ERE', 'TERM'
+    'YEAR1', 'YEAR2', 'YEAR3', 'YEAR4', 'YEAR5', 'YEAR6',
+    'YEAR7', 'YEAR8', 'YEAR9', 'YEAR10', 'YEAR11', 'YEAR12'
 );
 
 CREATE TABLE IF NOT EXISTS child(
