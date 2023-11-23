@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS internal_staff(
 
 CREATE TABLE IF NOT EXISTS activity(
     activity_id SERIAL,
-    activity_name VARCHAR(50) NOT NULL CHECK ( activity_name ~ '^[a-zA-Z0-9-'']+$' ),
+    activity_name VARCHAR(50) NOT NULL CHECK ( activity_name ~ '^[-''a-zA-Z0-9]+$' ),
     activity_description TEXT NOT NULL,
     activity_min_age INTEGER NOT NULL CHECK (activity_min_age > 1),
     activity_price FLOAT NOT NULL CHECK (activity_price >= 0),
@@ -102,10 +102,10 @@ CREATE TABLE IF NOT EXISTS activity(
 
 CREATE TABLE IF NOT EXISTS building(
     building_id SERIAL,
-    building_name VARCHAR(20) NOT NULL CHECK ( building_name ~ '^[a-zA-Z-'']+$' ),
+    building_name VARCHAR(20) NOT NULL CHECK ( building_name ~ '^[-''a-zA-Z]+$' ),
     address_street_number INTEGER NOT NULL CHECK ( address_street_number > 0 AND address_street_number < 10000 ),
     address_street_name VARCHAR(50) NOT NULL,
-    address_zip_code CHAR(5) NOT NULL CHECK ( address_zip_code ~ '^[0-9]{5}$'),
+    address_zip_code CHAR(5) NOT NULL CHECK ( address_zip_code ~ '^[[:digit:]]{5}$' ),
     address_city VARCHAR(50) NOT NULL CHECK ( address_city ~ '^[[:upper:]]+$' ),
     building_nb_floors INTEGER NOT NULL CHECK (building_nb_floors >= 0),
     building_has_elevator BOOLEAN NOT NULL,
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS room(
     room_id SERIAL,
     room_name VARCHAR(20) NOT NULL,
     room_floor INTEGER NOT NULL CHECK (room_floor >= 0 AND room_floor < 500),
-    room_number INTEGER NOT NULL CHECK (room_number >=0),
+    room_number INTEGER NOT NULL CHECK (room_number >= 0),
     room_type VARCHAR(12) NOT NULL CHECK ( room_type IN ( 'AMPHITHEATER', 'ROOM', 'WORKSHOP' ) ),
     room_capacity INTEGER NOT NULL CHECK (room_capacity >= 1 AND room_capacity < 50000),
     building_id INTEGER NOT NULL,
@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS staff_presence(
 CREATE TABLE IF NOT EXISTS building_log(
     person_id INTEGER,
     building_id INTEGER,
-    bl_timestamp TIMESTAMP NOT NULL CHECK ( bl_timestamp >= CURRENT_TIMESTAMP ),
+    bl_timestamp TIMESTAMP NOT NULL,
     bl_status BOOL NOT NULL,
     PRIMARY KEY (person_id, building_id),
     FOREIGN KEY (person_id) REFERENCES person(person_id),
@@ -164,7 +164,7 @@ CREATE TABLE IF NOT EXISTS building_log(
 CREATE TABLE IF NOT EXISTS room_log(
     room_id INTEGER,
     person_id INTEGER,
-    rl_timestamp TIMESTAMP NOT NULL CHECK ( rl_timestamp >= CURRENT_TIMESTAMP ),
+    rl_timestamp TIMESTAMP NOT NULL,
     rl_status BOOL NOT NULL,
     PRIMARY KEY (room_id, person_id),
     FOREIGN KEY (room_id) REFERENCES room(room_id),
