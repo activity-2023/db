@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS person(
     person_lname VARCHAR(50) NOT NULL CHECK ( person_lname ~ '^([[:upper:]]+[[:space:]]?)+$' ),
     person_gender VARCHAR(6) NOT NULL CHECK ( person_gender IN ( 'MALE', 'FEMALE' ) ),
     person_birth_date DATE NOT NULL CHECK (person_birth_date < CURRENT_DATE AND person_birth_date > CURRENT_DATE - INTERVAL '150 years'),
+    person_access_pin_hash CHAR(64) NOT NULL CHECK ( person_access_pin_hash ~ '^[a-f0-9]{64}$|^[A-F0-9]{64}$' ),
     PRIMARY KEY (person_id)
 );
 
