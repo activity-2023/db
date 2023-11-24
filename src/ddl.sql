@@ -152,21 +152,23 @@ CREATE TABLE IF NOT EXISTS staff_presence(
 );
 
 CREATE TABLE IF NOT EXISTS building_log(
+    bl_id SERIAL,
     person_id INTEGER,
     building_id INTEGER,
     bl_timestamp TIMESTAMP NOT NULL,
     bl_status BOOL NOT NULL,
-    PRIMARY KEY (person_id, building_id),
+    PRIMARY KEY (bl_id),
     FOREIGN KEY (person_id) REFERENCES person(person_id),
     FOREIGN KEY (building_id) REFERENCES building(building_id)
 );
 
 CREATE TABLE IF NOT EXISTS room_log(
+    rl_id SERIAL,
     room_id INTEGER,
     person_id INTEGER,
     rl_timestamp TIMESTAMP NOT NULL,
     rl_status BOOL NOT NULL,
-    PRIMARY KEY (room_id, person_id),
+    PRIMARY KEY (rl_id),
     FOREIGN KEY (room_id) REFERENCES room(room_id),
     FOREIGN KEY (person_id) REFERENCES person(person_id)
 );
