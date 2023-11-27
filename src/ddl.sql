@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS person, "user", parent, staff, internal_staff,
+DROP TABLE IF EXISTS person, user_account, parent, staff, internal_staff,
     external_staff, staff_presence, building, room, activity, event,
     room_log, building_log, participate, subscribe, child, organize, propose CASCADE;
 
@@ -6,6 +6,23 @@ DROP TYPE IF EXISTS gender, contract_type, staff_function, room_type, school_lev
 
 CREATE TYPE gender AS ENUM (
     'MALE', 'FEMALE'
+);
+
+CREATE TYPE school_level AS ENUM (
+    'YEAR1', 'YEAR2', 'YEAR3', 'YEAR4', 'YEAR5', 'YEAR6',
+    'YEAR7', 'YEAR8', 'YEAR9', 'YEAR10', 'YEAR11', 'YEAR12'
+);
+
+CREATE TYPE contract_type AS ENUM (
+    'PERMANENT', 'TEMPORARY', 'INTERIM', 'SERVICE'
+);
+
+CREATE TYPE staff_function AS ENUM (
+    'EXECUTIVE', 'SECRETARY', 'EMPLOYEE'
+);
+
+CREATE TYPE room_type AS ENUM (
+    'AMPHITHEATER', 'ROOM', 'WORKSHOP'
 );
 
 CREATE TABLE IF NOT EXISTS person(
@@ -18,7 +35,7 @@ CREATE TABLE IF NOT EXISTS person(
     PRIMARY KEY (person_id)
 );
 
-CREATE TABLE IF NOT EXISTS "user"(
+CREATE TABLE IF NOT EXISTS user_account(
     user_id INTEGER,
     user_login VARCHAR(20) NOT NULL UNIQUE CHECK ( user_login ~ '^[[:lower:]][a-z0-9]+$' ),
     user_password_hash CHAR(128) NOT NULL CHECK ( user_password_hash ~ '^[a-f0-9]{128}$|^[A-F0-9]{128}$' ),
@@ -30,19 +47,14 @@ CREATE TABLE IF NOT EXISTS "user"(
 CREATE TABLE IF NOT EXISTS parent(
     parent_id INTEGER,
     parent_email VARCHAR(320) NOT NULL CHECK ( parent_email ~ '^[\w!#$%&''/*+=?`{|}~^-]+(?:\.[\w!#$%&''/*+=?`{|}~^-]+)*@(?:[a-z0-9-]+\.)+[a-z]{2,6}$' ),
-    parent_phone CHAR(10) NOT NULL CHECK ( parent_phone ~ '^0[[:digit:]]{9}$' ),
-    parent_job VARCHAR(50) NULL CHECK ( parent_job ~ '^[a-zA-Z-'']+$' ),
+    parent_phone CHAR(10) NOT NULL CHECK ( parent_phone ~ '^0[1-9][[:digit:]]{8}$' ),
+    parent_job VARCHAR(50) NULL CHECK ( parent_job ~ '^[-'' a-zA-Z]+$' ),
     address_street_number INTEGER NOT NULL CHECK ( address_street_number > 0 AND address_street_number < 10000 ),
     address_street_name VARCHAR(50) NOT NULL,
     address_zip_code CHAR(5) NOT NULL CHECK ( address_zip_code ~ '^[0-9]{5}$' ),
-    address_city VARCHAR(50) NOT NULL CHECK ( address_city ~ '^[[:upper:]]+$' ),
+    address_city VARCHAR(50) NOT NULL CHECK ( address_city ~ '^[-'' A-Z]+$' ),
     PRIMARY KEY (parent_id),
-    FOREIGN KEY (parent_id) REFERENCES "user"(user_id)
-);
-
-CREATE TYPE school_level AS ENUM (
-    'YEAR1', 'YEAR2', 'YEAR3', 'YEAR4', 'YEAR5', 'YEAR6',
-    'YEAR7', 'YEAR8', 'YEAR9', 'YEAR10', 'YEAR11', 'YEAR12'
+    FOREIGN KEY (parent_id) REFERENCES user_account(user_id)
 );
 
 CREATE TABLE IF NOT EXISTS child(
@@ -54,29 +66,21 @@ CREATE TABLE IF NOT EXISTS child(
     FOREIGN KEY (parent_id) REFERENCES parent(parent_id)
 );
 
-CREATE TYPE contract_type AS ENUM (
-    'PERMANENT', 'TEMPORARY', 'INTERIM', 'SERVICE'
-);
-
 CREATE TABLE IF NOT EXISTS staff(
     staff_id INTEGER,
     staff_email VARCHAR(320) NOT NULL UNIQUE CHECK ( staff_email ~ '^[\w!#$%&''/*+=?`{|}~^-]+(?:\.[\w!#$%&''/*+=?`{|}~^-]+)*@(?:[a-z0-9-]+\.)+[a-z]{2,6}$' ),
-    staff_phone CHAR(10) NOT NULL UNIQUE CHECK ( staff_phone ~ '^0[[:digit:]]{9}$' ),
+    staff_phone CHAR(10) NOT NULL UNIQUE CHECK ( staff_phone ~ '^0[1-9][[:digit:]]{8}$' ),
     staff_contract_type VARCHAR(9) NOT NULL CHECK ( staff_contract_type IN ( 'PERMANENT', 'TEMPORARY', 'INTERIM', 'SERVICE' ) ),
     PRIMARY KEY (staff_id),
-    FOREIGN KEY (staff_id) REFERENCES "user"(user_id)
+    FOREIGN KEY (staff_id) REFERENCES user_account(user_id)
 );
 
 CREATE TABLE IF NOT EXISTS external_staff(
     ex_staff_id INTEGER,
-    ex_staff_origin VARCHAR(50) NOT NULL CHECK ( ex_staff_origin ~ '^[a-zA-Z-'']+$' ),
-    ex_staff_job VARCHAR(50) NULL CHECK ( ex_staff_job ~ '^[a-zA-Z-'']+$' ),
+    ex_staff_origin VARCHAR(50) NOT NULL CHECK ( ex_staff_origin ~ '^[-'' a-zA-Z]+$' ),
+    ex_staff_job VARCHAR(50) NULL CHECK ( ex_staff_job ~ '^[-'' a-zA-Z]+$' ),
     PRIMARY KEY (ex_staff_id),
     FOREIGN KEY (ex_staff_id) REFERENCES staff(staff_id)
-);
-
-CREATE TYPE staff_function AS ENUM (
-    'EXECUTIVE', 'SECRETARY', 'EMPLOYEE'
 );
 
 CREATE TABLE IF NOT EXISTS internal_staff(
@@ -86,14 +90,14 @@ CREATE TABLE IF NOT EXISTS internal_staff(
     address_street_number INTEGER NOT NULL CHECK ( address_street_number > 0 AND address_street_number < 10000 ),
     address_street_name VARCHAR(50) NOT NULL,
     address_zip_code CHAR(5) NOT NULL CHECK ( address_zip_code ~ '^[0-9]{5}$'),
-    address_city VARCHAR(50) NOT NULL CHECK ( address_city ~ '^[[:upper:]]+$' ),
+    address_city VARCHAR(50) NOT NULL CHECK ( address_city ~ '^[-'' A-Z]+$' ),
     PRIMARY KEY (int_staff_id),
     FOREIGN KEY (int_staff_id) REFERENCES staff(staff_id)
 );
 
 CREATE TABLE IF NOT EXISTS activity(
     activity_id SERIAL,
-    activity_name VARCHAR(50) NOT NULL CHECK ( activity_name ~ '^[-''a-zA-Z0-9]+$' ),
+    activity_name VARCHAR(50) NOT NULL,
     activity_description TEXT NOT NULL,
     activity_min_age INTEGER NOT NULL CHECK (activity_min_age > 1),
     activity_price FLOAT NOT NULL CHECK (activity_price >= 0),
@@ -102,18 +106,14 @@ CREATE TABLE IF NOT EXISTS activity(
 
 CREATE TABLE IF NOT EXISTS building(
     building_id SERIAL,
-    building_name VARCHAR(20) NOT NULL CHECK ( building_name ~ '^[-''a-zA-Z]+$' ),
+    building_name VARCHAR(20) NOT NULL CHECK ( building_name ~ '^[-'' a-zA-Z]+$' ),
     address_street_number INTEGER NOT NULL CHECK ( address_street_number > 0 AND address_street_number < 10000 ),
     address_street_name VARCHAR(50) NOT NULL,
     address_zip_code CHAR(5) NOT NULL CHECK ( address_zip_code ~ '^[[:digit:]]{5}$' ),
-    address_city VARCHAR(50) NOT NULL CHECK ( address_city ~ '^[[:upper:]]+$' ),
+    address_city VARCHAR(50) NOT NULL CHECK ( address_city ~ '^[-'' A-Z]+$' ),
     building_nb_floors INTEGER NOT NULL CHECK (building_nb_floors >= 0),
     building_has_elevator BOOLEAN NOT NULL,
     PRIMARY KEY (building_id)
-);
-
-CREATE TYPE room_type AS ENUM (
-    'AMPHITHEATER', 'ROOM', 'WORKSHOP'
 );
 
 CREATE TABLE IF NOT EXISTS room(
