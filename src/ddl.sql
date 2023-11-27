@@ -153,8 +153,8 @@ CREATE TABLE IF NOT EXISTS staff_presence(
 
 CREATE TABLE IF NOT EXISTS building_log(
     bl_id SERIAL,
-    person_id INTEGER,
-    building_id INTEGER,
+    person_id INTEGER NOT NULL,
+    building_id INTEGER NOT NULL,
     bl_timestamp TIMESTAMP NOT NULL,
     bl_status BOOL NOT NULL,
     PRIMARY KEY (bl_id),
@@ -164,8 +164,8 @@ CREATE TABLE IF NOT EXISTS building_log(
 
 CREATE TABLE IF NOT EXISTS room_log(
     rl_id SERIAL,
-    room_id INTEGER,
-    person_id INTEGER,
+    room_id INTEGER NOT NULL,
+    person_id INTEGER NOT NULL,
     rl_timestamp TIMESTAMP NOT NULL,
     rl_status BOOL NOT NULL,
     PRIMARY KEY (rl_id),
